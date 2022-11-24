@@ -1,5 +1,6 @@
 import {Socket} from "socket.io";
 import {io} from "../index";
+import {User} from "../types/User";
 
 export const socketController = async (socket: Socket) => {
   const socketId = socket.id;
@@ -36,5 +37,27 @@ export const socketController = async (socket: Socket) => {
   socket.on('disconnect', () => {
     console.log(`user ${user}, disconnected`)
     socket.broadcast.emit('user-disconnected', user)
+  })
+
+
+  socket.on('invite-user', (user: User) => {
+    console.log('User invited', user)
+    socket.to(user.userId).emit('me-invited', {username, userId: socketId});
+  })
+
+  socket.on('invite-accept', (fromUser: User) => {
+    console.log(`fromUser.username`, fromUser.username)
+    socket.join(fromUser.userId);
+
+    console.log(`${user.username} join to room ${fromUser.username} with id ${fromUser.userId}`)
+    socket.emit('joined-to-room', fromUser.userId)
+    socket.to(fromUser.userId).emit('invite-accepted');
+  })
+
+  socket.on('join-room', (userId: string) => {
+    socket.join(userId);
+
+    console.log(`User ${user.username} also join to rom ${userId}`)
+    socket.emit('user-joined-to-room')
   })
 }
