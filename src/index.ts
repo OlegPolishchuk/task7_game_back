@@ -4,11 +4,12 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import http from 'http';
 import {Server} from 'socket.io';
+import {socketController} from "./controllers/socketController";
 
 const app = express();
 const server = http.createServer(app);
 
-const io = new Server(server, {cors: {origin: '*'}});
+export const io = new Server(server, {cors: {origin: '*'}});
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
@@ -27,7 +28,7 @@ io.use((socket, next) => {
 })
 
 
-io.on('connection', () => {})
+io.on('connection', socketController)
 
 const start = async () => {
   try{
