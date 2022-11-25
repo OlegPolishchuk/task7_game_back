@@ -47,17 +47,34 @@ export const socketController = async (socket: Socket) => {
 
   socket.on('invite-accept', (fromUser: User) => {
     console.log(`fromUser.username`, fromUser.username)
-    socket.join(fromUser.userId);
 
-    console.log(`${user.username} join to room ${fromUser.username} with id ${fromUser.userId}`)
-    socket.emit('joined-to-room', fromUser.userId)
     socket.to(fromUser.userId).emit('invite-accepted');
   })
 
-  socket.on('join-room', (userId: string) => {
-    socket.join(userId);
-
-    console.log(`User ${user.username} also join to rom ${userId}`)
-    socket.emit('user-joined-to-room')
+  socket.on('invite-cancel', (invitedUser: User) => {
+    socket.to(invitedUser.userId).emit('invite-canceled')
   })
+
+  socket.on('join-to-game', async ({user, roomId}: {user: User, roomId: string} ) => {
+    await socket.join(roomId);
+
+    socket.to(roomId).emit('i-connected-to-room', user);
+
+    socket.on('make-move', (newBoardState: string[]) => {
+      console.log('move')
+      console.log(newBoardState)
+      socket.to(roomId).emit('your-turn', newBoardState)
+    })
+
+    socket.on('leave-game', (user: User) => {
+      socket.leave(roomId);
+      socket.to(roomId).emit('user-left-game', user);
+    })
+
+    socket.on('restart-game', (user: User) => {
+      socket.to(roomId).emit('invited-to-restart-game')
+    })
+
+  })
+
 }
