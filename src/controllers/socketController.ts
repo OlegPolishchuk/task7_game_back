@@ -35,19 +35,19 @@ export const socketController = async (socket: Socket) => {
   socket.broadcast.emit('new-user-connected', user)
 
   socket.on('disconnect', () => {
-    console.log(`user ${user}, disconnected`)
     socket.broadcast.emit('user-disconnected', user)
   })
 
 
   socket.on('invite-user', (user: User) => {
-    console.log('User invited', user)
     socket.to(user.userId).emit('me-invited', {username, userId: socketId});
   })
 
-  socket.on('invite-accept', (fromUser: User) => {
-    console.log(`fromUser.username`, fromUser.username)
+  socket.on('pick-up-invite', ({user, competitor}: {user: User, competitor: User}) => {
+    socket.to(competitor.userId).emit('picked-up-invite', user)
+  })
 
+  socket.on('invite-accept', (fromUser: User) => {
     socket.to(fromUser.userId).emit('invite-accepted');
   })
 
@@ -61,8 +61,6 @@ export const socketController = async (socket: Socket) => {
     socket.to(roomId).emit('i-connected-to-room', user);
 
     socket.on('make-move', (newBoardState: string[]) => {
-      console.log('move')
-      console.log(newBoardState)
       socket.to(roomId).emit('your-turn', newBoardState)
     })
 
@@ -75,6 +73,9 @@ export const socketController = async (socket: Socket) => {
       socket.to(roomId).emit('invited-to-restart-game')
     })
 
+    socket.on('accept-to-restart', () => {
+      socket.to(roomId).emit('invite-to-restart-accepted')
+    })
   })
 
 }
