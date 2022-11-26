@@ -38,6 +38,10 @@ export const socketController = async (socket: Socket) => {
     socket.broadcast.emit('user-disconnected', user)
   })
 
+  socket.on('message', ({message, user}: {message: string, user: User}) => {
+    socket.broadcast.emit('refresh-messages', {message, user})
+    socket.emit('refresh-messages', {message, user})
+  })
 
   socket.on('invite-user', (user: User) => {
     socket.to(user.userId).emit('me-invited', {username, userId: socketId});
