@@ -6,17 +6,18 @@ export const socketController = async (socket: Socket) => {
   const socketId = socket.id;
   const username = socket.data.username;
 
-  const user = {username, userId: socketId}
+  const user: User = {username, userId: socketId, isInGame: false};
 
   console.log(username);
   console.log(`user with id ${socketId} connected`)
 
-  const usersList = [];
-  const usersNameList = [];
+  const usersList: User[] = [];
+  const usersNameList: string[] = [];
   for (let [id, socket] of io.of('/').sockets) {
     usersList.push({
       userId: id,
       username: socket.data.username,
+      isInGame: false,
     })
     usersNameList.push(socket.data.username)
   }
@@ -62,6 +63,8 @@ export const socketController = async (socket: Socket) => {
   socket.on('join-to-game', async ({user, roomId}: {user: User, roomId: string} ) => {
     await socket.join(roomId);
 
+    socket.broadcast.emit('user-joined-to-game', user)
+
     socket.to(roomId).emit('i-connected-to-room', user);
 
     socket.on('make-move', (newBoardState: string[]) => {
@@ -70,6 +73,7 @@ export const socketController = async (socket: Socket) => {
 
     socket.on('leave-game', (user: User) => {
       socket.leave(roomId);
+      socket.broadcast.emit('user-in-free', user);
       socket.to(roomId).emit('user-left-game', user);
     })
 
