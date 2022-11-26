@@ -1,5 +1,4 @@
 import express from 'express';
-import mongoose from "mongoose";
 import dotenv from 'dotenv';
 import cors from 'cors';
 import http from 'http';
@@ -16,6 +15,9 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 
+app.get('/', (req, res) => {
+  res.json({message: "Hello"})
+})
 
 io.use((socket, next) => {
   const username = socket.handshake.auth.username;

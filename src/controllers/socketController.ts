@@ -8,9 +8,6 @@ export const socketController = async (socket: Socket) => {
 
   const user: User = {username, userId: socketId, isInGame: false};
 
-  console.log(username);
-  console.log(`user with id ${socketId} connected`)
-
   const usersList: User[] = [];
   const usersNameList: string[] = [];
   for (let [id, socket] of io.of('/').sockets) {
